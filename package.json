@@ -1,0 +1,17 @@
+{
+"name": "companion-module-shelly-mini-gen3",
+"version": "1.0.0",
+"description": "Bitfocus Companion module for Shelly 1 Mini Gen3 - Relay control and button press detection",
+"main": "main.js",
+"scripts": {
+"build": "companion-module-build",
+"start": "node main.js"
+},
+"dependencies": {
+"@companion-module/base": "~1.13.0"
+},
+"engines": {
+"node": ">=18"
+},
+"license": "MIT"
+}
