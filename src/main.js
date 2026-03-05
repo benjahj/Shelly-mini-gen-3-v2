@@ -14,8 +14,7 @@ class ShellyMiniGen3 extends InstanceBase {
 
 		// Internal state
 		this.relayState = false
-		this.pressCounter = 0
-		this.buttonPressActive = false
+		this.inputState = false
 
 		// WebSocket
 		this.ws = null
@@ -23,9 +22,6 @@ class ShellyMiniGen3 extends InstanceBase {
 		this.wsReconnectTimer = null
 		this.wsStatusTimer = null
 		this.msgId = 1
-
-		// Button impulse
-		this.buttonImpulseTimer = null
 	}
 
 	// ─── Lifecycle ────────────────────────────────────────────────────────────
@@ -43,10 +39,6 @@ class ShellyMiniGen3 extends InstanceBase {
 	async destroy() {
 		this.log('debug', 'Module destroyed — cleaning up')
 		this._cleanupWs()
-		if (this.buttonImpulseTimer) {
-			clearTimeout(this.buttonImpulseTimer)
-			this.buttonImpulseTimer = null
-		}
 	}
 
 	async configUpdated(config) {
@@ -84,8 +76,6 @@ class ShellyMiniGen3 extends InstanceBase {
 		this.setVariableValues({
 			relay_state: 'off',
 			input_state: 'off',
-			button_press: '0',
-			press_counter: '0',
 		})
 	}
 
@@ -187,37 +177,40 @@ class ShellyMiniGen3 extends InstanceBase {
 		}
 
 		// ── Shelly.GetStatus response (initial load) ──────────────────────
-		if (msg.result && msg.result['switch:0'] && typeof msg.result['switch:0'].output === 'boolean') {
-			this._updateRelayState(msg.result['switch:0'].output)
+		if (msg.result) {
+			const sw = msg.result['switch:0']
+			if (sw && typeof sw.output === 'boolean') this._updateRelayState(sw.output)
+
+			const inp = msg.result['input:0']
+			if (inp && typeof inp.state === 'boolean') this._updateInputState(inp.state)
 		}
 
 		// ── NotifyStatus — device pushes state changes proactively ────────
 		if (msg.method === 'NotifyStatus') {
-			const sw = msg.params && msg.params['switch:0']
-			if (sw && typeof sw.output === 'boolean') {
-				this._updateRelayState(sw.output)
-			}
+			const params = msg.params || {}
+
+			const sw = params['switch:0']
+			if (sw && typeof sw.output === 'boolean') this._updateRelayState(sw.output)
+
+			const inp = params['input:0']
+			if (inp && typeof inp.state === 'boolean') this._updateInputState(inp.state)
 		}
 
 		// ── NotifyEvent — button / input events ───────────────────────────
-		// These fire regardless of whether input type is "button" or "switch".
-		// For type=button : single_push, double_push, triple_push, long_push, btn_down, btn_up
-		// For type=switch : toggle_on, toggle_off
+		// Shelly pushes these in real-time over WebSocket regardless of input type:
+		//   type=button → btn_down, btn_up, single_push, double_push, triple_push, long_push
+		//   type=switch → toggle_on, toggle_off
 		if (msg.method === 'NotifyEvent') {
 			const events = msg.params && msg.params.events
 			if (Array.isArray(events)) {
 				for (const ev of events) {
 					if (ev.component !== 'input:0') continue
+					this.log('debug', `Input event: ${ev.event}`)
 
-					if (
-						ev.event === 'single_push' ||
-						ev.event === 'toggle_on' ||
-						ev.event === 'double_push' ||
-						ev.event === 'triple_push' ||
-						ev.event === 'long_push'
-					) {
-						this.log('debug', `Button event: ${ev.event}`)
-						this._triggerButtonPress()
+					if (ev.event === 'btn_down' || ev.event === 'toggle_on') {
+						this._updateInputState(true)
+					} else if (ev.event === 'btn_up' || ev.event === 'toggle_off') {
+						this._updateInputState(false)
 					}
 				}
 			}
@@ -230,23 +223,10 @@ class ShellyMiniGen3 extends InstanceBase {
 		this.checkFeedbacks('relay_on', 'relay_off')
 	}
 
-	_triggerButtonPress() {
-		this.pressCounter++
-		this.buttonPressActive = true
-		this.setVariableValues({
-			button_press: '1',
-			input_state: 'on',
-			press_counter: String(this.pressCounter),
-		})
-		this.checkFeedbacks('button_pressed')
-
-		if (this.buttonImpulseTimer) clearTimeout(this.buttonImpulseTimer)
-		this.buttonImpulseTimer = setTimeout(() => {
-			this.buttonPressActive = false
-			this.setVariableValues({ button_press: '0', input_state: 'off' })
-			this.checkFeedbacks('button_pressed')
-			this.buttonImpulseTimer = null
-		}, 500)
+	_updateInputState(active) {
+		this.inputState = active
+		this.setVariableValues({ input_state: active ? 'on' : 'off' })
+		this.checkFeedbacks('input_active')
 	}
 
 	// ─── HTTP helpers (used only for sending commands) ────────────────────────

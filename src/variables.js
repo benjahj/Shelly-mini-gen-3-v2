@@ -10,15 +10,7 @@ module.exports = function (self) {
 		},
 		{
 			variableId: 'input_state',
-			name: 'Input / Button State (on/off)',
-		},
-		{
-			variableId: 'button_press',
-			name: 'Button Press Impulse (1 for ~500 ms after press, then 0)',
-		},
-		{
-			variableId: 'press_counter',
-			name: 'Button Press Counter (increments on each press)',
+			name: 'Input State (on/off)',
 		},
 	])
 }

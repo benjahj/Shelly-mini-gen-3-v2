@@ -34,17 +34,17 @@ module.exports = function (self) {
 			},
 		},
 
-		button_pressed: {
-			name: 'Button is Currently Pressed',
+		input_active: {
+			name: 'Input is Active (pressed / switched on)',
 			type: 'boolean',
-			label: 'Button is Currently Pressed',
+			label: 'Input is Active',
 			defaultStyle: {
 				bgcolor: combineRgb(255, 140, 0),
 				color: combineRgb(0, 0, 0),
 			},
 			options: [],
 			callback: () => {
-				return self.buttonPressActive === true
+				return self.inputState === true
 			},
 		},
 	})
