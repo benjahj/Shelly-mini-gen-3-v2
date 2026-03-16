@@ -1,0 +1,28 @@
+{
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"id": "shelly-minigen3",
+	"name": "Shelly Mini Gen3",
+	"shortname": "Shelly Mini G3",
+	"description": "Control and monitor the Shelly 1 Mini Gen3 smart relay via HTTP RPC",
+	"version": "1.0.0",
+	"license": "MIT",
+	"repository": "https://github.com/bitfocus/companion-module-shelly-minigen3",
+	"bugs": "https://github.com/bitfocus/companion-module-shelly-minigen3/issues",
+	"maintainers": [
+		{
+			"name": "Companion User",
+			"email": ""
+		}
+	],
+	"runtime": {
+		"type": "node18",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../src/main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "Shelly",
+	"products": ["1 Mini Gen3"],
+	"keywords": ["shelly", "relay", "iot", "switch"]
+}
+

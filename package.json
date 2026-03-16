@@ -1,0 +1,23 @@
+{
+	"name": "companion-module-shelly-minigen3",
+	"version": "1.0.0",
+	"description": "Bitfocus Companion module for Shelly 1 Mini Gen3",
+	"main": "src/main.js",
+	"scripts": {
+		"start": "node src/main.js"
+	},
+	"license": "MIT",
+	"engines": {
+		"node": ">=18"
+	},
+	"dependencies": {
+		"@companion-module/base": "^1.14.1",
+		"ws": "^8.19.0"
+	},
+	"keywords": [
+		"companion",
+		"shelly",
+		"relay",
+		"iot"
+	]
+}
