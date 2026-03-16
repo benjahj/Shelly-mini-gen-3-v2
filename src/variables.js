@@ -10,7 +10,7 @@ module.exports = function (self) {
 		},
 		{
 			variableId: 'input_state',
-			name: 'Input State (N/A / Pushed)',
+			name: 'Input State (on/off)',
 		},
 		{
 			variableId: 'input_push_type',

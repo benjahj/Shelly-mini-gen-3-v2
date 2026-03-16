@@ -81,7 +81,7 @@ class ShellyMiniGen3 extends InstanceBase {
 	_resetVariables() {
 		this.setVariableValues({
 			relay_state: 'off',
-			input_state: 'N/A',
+			input_state: 'off',
 			input_push_type: 'N/A',
 		})
 	}
@@ -240,7 +240,7 @@ class ShellyMiniGen3 extends InstanceBase {
 
 	_updateInputState(active) {
 		this.inputState = active
-		this.setVariableValues({ input_state: active ? 'Pushed' : 'N/A' })
+		this.setVariableValues({ input_state: active ? 'on' : 'off' })
 		this.checkFeedbacks('input_active')
 	}
 
