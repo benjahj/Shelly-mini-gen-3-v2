@@ -16,6 +16,7 @@ class ShellyMiniGen3 extends InstanceBase {
 		this.relayState = false
 		this.inputState = false
 		this.inputPushType = 'N/A'
+		this._pushTypeResetTimer = null
 
 		// WebSocket
 		this.ws = null
@@ -39,6 +40,10 @@ class ShellyMiniGen3 extends InstanceBase {
 
 	async destroy() {
 		this.log('debug', 'Module destroyed — cleaning up')
+		if (this._pushTypeResetTimer) {
+			clearTimeout(this._pushTypeResetTimer)
+			this._pushTypeResetTimer = null
+		}
 		this._cleanupWs()
 	}
 
@@ -240,8 +245,22 @@ class ShellyMiniGen3 extends InstanceBase {
 	}
 
 	_updateInputPushType(type) {
+		// Clear any pending reset timer
+		if (this._pushTypeResetTimer) {
+			clearTimeout(this._pushTypeResetTimer)
+			this._pushTypeResetTimer = null
+		}
+
 		this.inputPushType = type
 		this.setVariableValues({ input_push_type: type })
+
+		// Auto-reset to N/A after 1 second (skip reset if already N/A)
+		if (type !== 'N/A') {
+			this._pushTypeResetTimer = setTimeout(() => {
+				this._pushTypeResetTimer = null
+				this._updateInputPushType('N/A')
+			}, 1000)
+		}
 	}
 
 	// ─── HTTP helpers (used only for sending commands) ────────────────────────
